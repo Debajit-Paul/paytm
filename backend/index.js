@@ -7,6 +7,6 @@ app.use(express.json());
 
 const mainRouter = require("./routers/index");
 
-app.use("/app/v1", mainRouter);
+app.use("/api/v1", mainRouter);
 
 app.listen(3000);

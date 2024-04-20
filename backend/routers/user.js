@@ -98,6 +98,14 @@ router.post("/signin", async (req, res) => {
   });
 });
 
+router.get("/", authMiddleware, async (req, res) => {
+  const user = await User.findOne({ _id: req.userId });
+
+  res.json({
+    user,
+  });
+});
+
 router.put("/", authMiddleware, async (req, res) => {
   const { success } = updateBody.safeParse(req.body);
   if (!success) {
@@ -116,28 +124,32 @@ router.put("/", authMiddleware, async (req, res) => {
 router.get("/bulk", authMiddleware, async (req, res) => {
   const filter = req.query.filter || "";
 
+  const regex = new RegExp(filter, "i");
+
   const users = await User.find({
     $or: [
       {
         firstName: {
-          $regex: filter,
+          $regex: regex,
         },
       },
       {
         lastName: {
-          $regex: filter,
+          $regex: regex,
         },
       },
     ],
   });
 
   res.json({
-    user: users.map((user) => ({
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      _id: user._id,
-    })),
+    user: users
+      .filter((user) => user._id != req.userId)
+      .map((user) => ({
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        _id: user._id,
+      })),
   });
 });
 
